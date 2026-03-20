@@ -1,0 +1,23 @@
+[package]
+name = "minerva-verify"
+version = "0.2.0"
+edition = "2021"
+authors = ["Digital Forge Studios <hello@dforge.ca>"]
+description = "Standalone CLI verifier for Minerva ZK-STARK proofs"
+license = "LicenseRef-Proprietary"
+repository = "https://github.com/digitalforgeca/minerva-verify"
+homepage = "https://zkesg.com"
+keywords = ["zero-knowledge", "zk-stark", "verification", "cryptography", "privacy"]
+categories = ["command-line-utilities", "cryptography"]
+readme = "README.md"
+
+[[bin]]
+name = "minerva-verify"
+
+[dependencies]
+anyhow = "1.0"
+base64 = "0.22"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"

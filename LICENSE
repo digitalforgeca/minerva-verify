@@ -1,0 +1,28 @@
+# Minerva SDK License
+
+Copyright (c) 2025-2026 Abdolah Pouriliaee / Digital Forge Studios. All Rights Reserved.
+
+## Grant of License
+
+Permission is hereby granted to any person or organization obtaining a copy of this software development kit and associated documentation files (the "SDK") to use the SDK solely for the purpose of integrating with the Minerva ZK-STARK proof platform ("Minerva Platform") operated at zkesg.com, subject to the following conditions:
+
+## Permitted Uses
+
+- Using the SDK to interact with the Minerva Platform API
+- Incorporating the SDK into applications that consume the Minerva Platform
+- Building applications that generate, verify, or manage ZK-STARK proofs through the Minerva Platform
+
+## Restrictions
+
+- You may NOT reverse-engineer, decompile, or disassemble the Minerva proof engine or any associated WASM binaries
+- You may NOT use the SDK to build a competing proof generation service
+- You may NOT redistribute the SDK as a standalone product
+- You may NOT remove or alter any copyright notices or license terms
+
+## No Warranty
+
+THE SDK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SDK OR THE USE OR OTHER DEALINGS IN THE SDK.
+
+## Termination
+
+This license is effective until terminated. It will terminate automatically if you fail to comply with any term. Upon termination, you must destroy all copies of the SDK in your possession.
