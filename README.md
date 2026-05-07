@@ -1,13 +1,21 @@
 # minerva-verify
 
-Standalone CLI tool for verifying Minerva ZK-STARK proofs.
+Standalone open-source CLI tool for verifying [Minerva](https://zkesg.com) ZK-STARK proofs.
 
-Verify any Minerva proof from the command line — no account, no API key, no private data needed.
+Performs **real cryptographic verification** using the [Winterfell](https://github.com/facebook/winterfell) STARK library. No account, no API key, no private data needed — just the proof file.
 
 ## Install
 
 ```bash
 cargo install minerva-verify
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/digitalforgeca/minerva-verify
+cd minerva-verify
+cargo build --release
 ```
 
 ## Usage
@@ -17,46 +25,110 @@ cargo install minerva-verify
 minerva-verify proof.json
 
 # Verify multiple proofs
-minerva-verify proof1.json proof2.json
+minerva-verify proof1.json proof2.json proof3.json
+
+# Read from stdin
+cat proof.json | minerva-verify -
 
 # JSON output
 minerva-verify --json proof.json
 
-# Read from stdin
-cat proof.json | minerva-verify -
+# Verbose mode (show proof details)
+minerva-verify --verbose proof.json
+
+# Quiet mode (exit code only)
+minerva-verify --quiet proof.json
 ```
 
-## What It Checks
+### Exit codes
 
-- Proof format and structural integrity
-- Base64 encoding validity
-- Minimum proof size constraints
-- Circuit hash presence
-- Gate definitions present
-- Public inputs completeness
+| Code | Meaning |
+|------|---------|
+| 0    | All proofs verified successfully |
+| 1    | One or more proofs are cryptographically invalid |
+| 2    | Error reading or parsing a proof file |
 
-For full cryptographic verification, submit proofs to the Minerva API at `https://zkesg.com/api/v1/proofs/verify` or use the web verifier at `zkesg.com/verify`.
+## Proof format
 
-## Output
+The verifier accepts Minerva `ProofOutput` JSON files:
 
-```
-✅ proof.json — Valid (684 bytes, 3 gates, verified in 1.2ms)
-❌ bad-proof.json — Invalid: missing circuit hash
-```
-
-With `--json`:
 ```json
 {
-  "file": "proof.json",
-  "valid": true,
-  "proof_size": 684,
-  "gates": 3,
-  "elapsed_ms": 1.2
+  "proof": "WINTERFELL_PROOF_<base64-encoded STARK proof>",
+  "public_inputs": {
+    "minimum_age": 18
+  },
+  "circuit": {
+    "gates": [
+      { "type": "gt", "left": "actual_age", "right": "minimum_age" }
+    ]
+  },
+  "circuit_hash": "ec8eca7f...",
+  "generated_at": "2026-05-07T19:30:11Z",
+  "verification_hints": {
+    "variable_names": ["__counter", "minimum_age", "actual_age", "__diff_0", "__bit_0_0", "..."],
+    "initial_values": [0, 18, 25, 6, 0, "..."]
+  }
 }
 ```
 
+### Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `proof` | ✅ | Base64-encoded Winterfell STARK proof with `WINTERFELL_PROOF_` prefix |
+| `public_inputs` | ✅ | Map of public input names to values |
+| `circuit` | ✅ | Circuit definition with constraint gates |
+| `circuit_hash` | Optional | SHA-256 hash of the circuit definition |
+| `generated_at` | Optional | ISO 8601 timestamp of proof generation |
+| `verification_hints` | Optional* | Variable names and initial values for boundary assertions |
+
+\* Required when gt/lt gates reference private inputs. The Minerva prover includes these automatically.
+
+### Supported gate types
+
+| Gate | Description | Example |
+|------|-------------|---------|
+| `add` | `result = left + right` | `{"type": "add", "left": "a", "right": "b", "result": "sum"}` |
+| `mul` | `result = left * right` | `{"type": "mul", "left": "a", "right": "b", "result": "product"}` |
+| `eq` | `left == right` | `{"type": "eq", "left": "declared", "right": "actual"}` |
+| `gt` | `left > right` | `{"type": "gt", "left": "age", "right": "minimum"}` |
+| `lt` | `left < right` | `{"type": "lt", "left": "emissions", "right": "cap"}` |
+| `hash_eq` | `left == hash(right)` | `{"type": "hash_eq", "left": "hash", "right": "doc"}` |
+
+## How it works
+
+1. **Deserialize** the Winterfell STARK proof from the base64 blob
+2. **Reconstruct** the AIR (Algebraic Intermediate Representation) public inputs from the circuit definition and verification hints
+3. **Verify** the proof cryptographically using `winterfell::verify()` — the same verification algorithm used by the Winterfell library
+
+The verifier reconstructs the exact constraint system (transition constraints + boundary assertions) that the prover used, then checks that the proof satisfies all constraints. No private data is needed — the proof is self-contained.
+
+For proofs involving private inputs in comparison gates (gt/lt), the prover embeds `verification_hints` containing the boundary assertion values. These don't reveal private data beyond what the proof already proves (e.g., for "age > 18", the hints reveal the difference value but not the exact age beyond what the comparison implies).
+
+## Library usage
+
+```rust
+use minerva_verify::{verify_proof_output, ProofOutput};
+
+let json = std::fs::read_to_string("proof.json").unwrap();
+let output: ProofOutput = serde_json::from_str(&json).unwrap();
+
+match verify_proof_output(&output) {
+    Ok(true)  => println!("✅ Proof is valid"),
+    Ok(false) => println!("❌ Proof is invalid"),
+    Err(e)    => eprintln!("Error: {}", e),
+}
+```
+
+## Platform
+
+Proofs are generated by the [Minerva ZK-STARK platform](https://zkesg.com) — a self-serve zero-knowledge proof engine for compliance, privacy, and verification use cases.
+
+- **Website:** [zkesg.com](https://zkesg.com)
+- **SDK:** [@digitalforgestudios/minerva-sdk](https://www.npmjs.com/package/@digitalforgestudios/minerva-sdk)
+- **GitHub:** [digitalforgeca/minerva-verify](https://github.com/digitalforgeca/minerva-verify)
+
 ## License
 
-Proprietary — see [LICENSE](./LICENSE)
-
-Copyright (c) 2025-2026 Abdolah Pouriliaee / Digital Forge Studios
+MIT — see [LICENSE](./LICENSE)
