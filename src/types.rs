@@ -1,5 +1,5 @@
 // Data types for Minerva ZK-STARK proof verification.
-// Extracted from the Minerva monorepo — verification-only subset.
+// Verification-only subset of Minerva data types.
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;

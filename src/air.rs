@@ -1,6 +1,6 @@
 // Winterfell AIR (Algebraic Intermediate Representation) for Minerva.
 //
-// This is an exact copy of the AIR definition from the Minerva monorepo.
+// This must match the AIR used by the Minerva proof engine exactly.
 // Any divergence would cause valid proofs to fail verification.
 //
 // TRACE LAYOUT
